@@ -1,5 +1,5 @@
 /*
- * This class is intended to drive a DRV8825 stepper stick.
+ * This class is intended to define behavior for photographic pose.
  * Copyright (C) 2017  Pierre-Loup Martin
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,52 +16,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DRV8825_H
-#define DRV8825_H
+#ifndef FUNCTION_H
+#define FUNCTION_H
 
 #include <Arduino.h>
 
 #include "settings.h"
 
-class DRV8825{
+class Function{
 public:
-	enum direction_t{
-		BACKWARD = 0,
-		FORWARD,
-	};
 
 	enum status_t{
-		STOPPED = 0,
-		MOVING,
+		STATUS_IDLE = 0,
+		STATUS_DELAY,
+		STATUS_POSE,
+		STATUS_POSE_B,
+		STATUS_POSE_T,
 	};
 
-	void init(byte stepPin, byte dirPin, byte enPin);
-	void moveSteps(int step, bool dir);
-	void moveDistance(int distance, bool dir);
-	status_t update();
+	enum action_t{
+		ACTION_IDLE = 0,
+		ACTION_PENDING,
+		ACTION_START,
+		ACTION_STOP,
+	};
 
-	void home();
+	void init(byte pin, byte mode, int delay);
 
-	void enable();
-	void enable(bool value);
-	void disable();
+	action_t update();
 
-	void setReverse(bool value);
+protected:
 
-	status_t getStatus();
-
+	action_t updateDelay();
 
 private:
-	byte _pinStep;
-	byte _pinDir;
-	byte _pinEn;
 
-	bool _dir;
-	int _step;
-	bool _reverse;
+	byte _pin;
+	byte _mode;
+	int _delay;
 
-	byte _enable;
 	status_t _status;
+
+	bool _pinState, _prevPinState;
+
+	double _time, _prevTime;
+
 };
 
 #endif

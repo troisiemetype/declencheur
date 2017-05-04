@@ -16,18 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-DRV8825::DRV8825(){
+ #include "drv8825.h"
 
-}
-
-void DRV8825::init(byte stepPin, byte dirPin, byte enPin):_reverse = false{
+void DRV8825::init(byte stepPin, byte dirPin, byte enPin){
 	_pinStep = stepPin;
 	_pinDir = dirPin;
 	_pinEn = enPin;
 
+	_reverse = false;
 	pinMode(_pinStep, OUTPUT);
 	pinMode(_pinDir, OUTPUT);
 	pinMode(_pinEn, OUTPUT);
+
+	pinMode(ENDSTOP_PIN, INPUT_PULLUP);
+
+	pinMode(13, OUTPUT);
 }
 
 void DRV8825::moveSteps(int step, bool dir){
@@ -35,23 +38,36 @@ void DRV8825::moveSteps(int step, bool dir){
 	_step = step;
 
 	digitalWrite(_pinDir, (_dir ^ _reverse));
+
+	digitalWrite(13, _dir);
 }
 
 void DRV8825::moveDistance(int distance, bool dir){
-	
+	int steps = (distance / TRAVEL_REV) * STEPS;
+	moveSteps(steps, dir);
 }
 
-void DRV8825::update(){
-	if(_step == 0) return;
+DRV8825::status_t DRV8825::update(){
+	if(_step == 0){
+		_status = STOPPED;
+		return _status;
+	}
+
 	digitalWrite(_pinStep, HIGH);
 	delayMicroseconds(5);
 	digitalWrite(_pinStep, LOW);
 
 	_step--;
+
+	_status = MOVING;
+	return _status;
 }
 
 void DRV8825::home(){
-
+	while (digitalRead(ENDSTOP_PIN) == HIGH){
+		moveSteps(5, BACKWARD);
+	}
+	moveSteps(5, FORWARD);
 }
 
 void DRV8825::enable(){
@@ -71,6 +87,6 @@ void DRV8825::setReverse(bool value){
 	_reverse = value;
 }
 
-byte DRV8825::getStatus(){
-
+DRV8825::status_t DRV8825::getStatus(){
+	return _status;
 }

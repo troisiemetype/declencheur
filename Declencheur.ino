@@ -33,10 +33,50 @@
  * Above with short or long temporisation
  */
 
+#include "settings.h"
+#include "drv8825.h"
+#include "function.h"
+
+DRV8825 stepper;
+
+Function* fn[4] = {0, 0, 0, 0};
+
+
 void setup(){
 
+	stepper.init(STEP_PIN, DIR_PIN, ENABLE_PIN);
+
+//	stepper.home();
+	for(byte i = 0; i < 4; i++){
+		fn[i] = new Function();
+	}
+
+	fn[0]->init(FN1_BUTTON, FN1_MODE, FN1_DELAY);
+	fn[1]->init(FN2_BUTTON, FN2_MODE, FN2_DELAY);
+	fn[2]->init(FN3_BUTTON, FN3_MODE, FN3_DELAY);
+	fn[3]->init(FN4_BUTTON, FN4_MODE, FN4_DELAY);
+
+	Serial.begin(115200);
 }
 
 void loop(){
+	if(stepper.update() != DRV8825::STOPPED) return;
 
+	Function::action_t action = Function::ACTION_IDLE;
+	for(byte i = 0; i < 4; i++){
+//		Serial.print("function ");
+//		Serial.println(i);
+		action = fn[i]->update();
+		if(action != Function::ACTION_IDLE){
+			break;
+		}
+	}
+
+	if(action == Function::ACTION_START){
+//		Serial.println("action start");
+		stepper.moveDistance(TRAVEL, DRV8825::FORWARD);
+	} else if(action == Function::ACTION_STOP){
+//		Serial.println("action stop");
+		stepper.moveDistance(TRAVEL, DRV8825::BACKWARD);
+	}
 }

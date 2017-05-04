@@ -23,25 +23,39 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-//Buttons definition
-#define POSE 				0
-#define POSE_T 				1
-#define POSE_1 				2
-#define POSE_2				3
+//Pins definition
+#define BUTTON_A 			5
+#define BUTTON_B 			4
+#define BUTTON_C 			3
+#define BUTTON_D 			2
 
-//Functions linked to buttons
-#define BUTTON1 			POSE
-#define BUTTON2 			POSE_T
-#define BUTTON3 			POSE_1
-#define BUTTON4 			POSE_2
+#define STEP_PIN			6
+#define DIR_PIN 			7
+#define ENABLE_PIN			8
 
-//Tempo lengths, in milliseconds (1 s == 1000 ms)
-#define TEMPO_1 			2000
-#define TEMPO_2 			10000
+#define ENDSTOP_PIN			9
+
+//Function definition
+#define FN1_BUTTON 			BUTTON_A 	//Wich button is linked to this function
+#define FN1_MODE 			1			//0=disable, 1=pose, 2=pose B, 3=pose T
+#define FN1_DELAY 			0			//Delay between button press and triggering
+
+#define FN2_BUTTON 			BUTTON_B
+#define FN2_MODE 			1
+#define FN2_DELAY 			1000
+
+#define FN3_BUTTON 			BUTTON_C
+#define FN3_MODE 			2
+#define FN3_DELAY 			0
+
+#define FN4_BUTTON 			BUTTON_D
+#define FN4_MODE 			3
+#define FN4_DELAY 			0
 
 //Default settings of stepper motor
 #define SPEED 				20			//travelling speed in mm/s
 #define STEPS 				20			//Number of steps/full rotation
+#define TRAVEL_REV 			3			//Travel per revolution
 #define TRAVEL 				25 			//Standard travel for triggering
 #define TRAVEL_MAX 			40 			//Max travel for the stepper
 #define REVERSE 			0 			//Motor turning direction
