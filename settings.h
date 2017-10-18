@@ -36,9 +36,9 @@
 #define ENDSTOP_PIN			9
 
 //Function definition
-#define FN1_BUTTON 			BUTTON_A 	//Wich button is linked to this function
+#define FN1_BUTTON 			BUTTON_A 	//Which button is linked to this function
 #define FN1_MODE 			1			//0=disable, 1=pose, 2=pose B, 3=pose T
-#define FN1_DELAY 			0			//Delay between button press and triggering
+#define FN1_DELAY 			0			//Delay between button press and triggering (milliseconds)
 
 #define FN2_BUTTON 			BUTTON_B
 #define FN2_MODE 			1
@@ -53,10 +53,11 @@
 #define FN4_DELAY 			0
 
 //Default settings of stepper motor
-#define SPEED 				20			//travelling speed in mm/s
+#define SPEED 				150			//travelling speed in mm/s
 #define STEPS 				20			//Number of steps/full rotation
+#define MICROSTEPS			16			//Microsteps setting. Must match with hardawre side.
 #define TRAVEL_REV 			3			//Travel per revolution
-#define TRAVEL 				25 			//Standard travel for triggering
+#define TRAVEL 				40 			//Standard travel for triggering
 #define TRAVEL_MAX 			40 			//Max travel for the stepper
 #define REVERSE 			0 			//Motor turning direction
 

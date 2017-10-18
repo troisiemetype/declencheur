@@ -41,9 +41,8 @@ public:
 	status_t update();
 
 	void home();
-
-	void enable();
-	void enable(bool value);
+	
+	void enable(bool value = true);
 	void disable();
 
 	void setReverse(bool value);
@@ -52,15 +51,15 @@ public:
 
 
 private:
-	byte _pinStep;
-	byte _pinDir;
-	byte _pinEn;
+	uint8_t _pinStep;
+	uint8_t _pinDir;
+	uint8_t _pinEn;
 
 	bool _dir;
-	int _step;
+	uint16_t _step;
 	bool _reverse;
 
-	byte _enable;
+	bool _enable;
 	status_t _status;
 };
 

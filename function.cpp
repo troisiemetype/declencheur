@@ -18,12 +18,24 @@
 
 #include "function.h"
 
+int8_t Function::_instances = 0;
+int8_t Function::_active = 0;
+
+int8_t Function::addFunction(){
+	return ++_instances;
+}
+
+Function::Function(){
+	_instanceNumber = addFunction();
+}
+
 void Function::init(byte pin, byte mode, int delay = 0){
 	_pin = pin;
 	_mode = mode;
 	_delay = delay;
 
 	_status = STATUS_IDLE;
+//	Function::_globalStatus = _status;
 
 	_pinState = _prevPinState = LOW;
 
@@ -37,12 +49,17 @@ Function::action_t Function::update(){
 	_prevPinState = _pinState;
 	_pinState = digitalRead(_pin);
 
+//	Serial.print("pin state: ");
+//	Serial.println(_pinState);
+
+
 //	Serial.println(_pinState);
 	if(_status == STATUS_IDLE){
 //		Serial.println("idle");
 		if((_prevPinState != _pinState) && (_pinState == HIGH)){
 			_prevTime = _time = millis();
 			_status = STATUS_DELAY;
+			_active = _instanceNumber;
 			return ACTION_PENDING;
 		}
 		return ACTION_IDLE;
@@ -52,11 +69,13 @@ Function::action_t Function::update(){
 	} else if(_status == STATUS_POSE){
 //		Serial.println("pose");
 		_status = STATUS_IDLE;
+		_active = 0;
 		return ACTION_STOP;
 	} else if(_status == STATUS_POSE_B){
 //		Serial.println("pose B");
 		if((_prevPinState != _pinState) && (_pinState == LOW)){
 			_status = STATUS_IDLE;
+			_active = 0;
 			return ACTION_STOP;
 		} else {
 			return ACTION_PENDING;
@@ -65,6 +84,7 @@ Function::action_t Function::update(){
 //		Serial.println("pose T");
 		if((_prevPinState != _pinState) && (_pinState == HIGH)){
 			_status = STATUS_IDLE;
+			_active = 0;
 			return ACTION_STOP;
 		} else {
 			return ACTION_PENDING;
@@ -78,9 +98,10 @@ Function::action_t Function::update(){
 Function::action_t Function::updateDelay(){
 //	Serial.println("update delay");
 
-	_status = STATUS_DELAY;
 	_time = millis();
 	if((_time - _prevTime) >= _delay){
+//		Serial.print("Active button: ");
+//		Serial.println(_instanceNumber);
 		if(_mode == 1){
 			_status = STATUS_POSE;
 		} else if(_mode == 2){
@@ -92,4 +113,8 @@ Function::action_t Function::updateDelay(){
 		return ACTION_START;
 	}
 	return ACTION_PENDING;
+}
+
+int8_t Function::getActive(){
+	return _active;
 }

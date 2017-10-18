@@ -26,6 +26,8 @@
 class Function{
 public:
 
+	Function();
+
 	enum status_t{
 		STATUS_IDLE = 0,
 		STATUS_DELAY,
@@ -45,22 +47,29 @@ public:
 
 	action_t update();
 
+	static int8_t getActive();
+
 protected:
 
 	action_t updateDelay();
 
 private:
+	static int8_t addFunction();
 
-	byte _pin;
-	byte _mode;
+	int8_t _instanceNumber;
+
+	int8_t _pin;
+	int8_t _mode;
 	int _delay;
 
 	status_t _status;
 
 	bool _pinState, _prevPinState;
 
-	double _time, _prevTime;
+	int32_t _time, _prevTime;
 
+	static int8_t _instances;
+	static int8_t _active;
 };
 
 #endif

@@ -43,10 +43,14 @@ Function* fn[4] = {0, 0, 0, 0};
 
 
 void setup(){
+	Serial.begin(115200);
+
+	initISR();
 
 	stepper.init(STEP_PIN, DIR_PIN, ENABLE_PIN);
 
 //	stepper.home();
+
 	for(byte i = 0; i < 4; i++){
 		fn[i] = new Function();
 	}
@@ -55,28 +59,75 @@ void setup(){
 	fn[1]->init(FN2_BUTTON, FN2_MODE, FN2_DELAY);
 	fn[2]->init(FN3_BUTTON, FN3_MODE, FN3_DELAY);
 	fn[3]->init(FN4_BUTTON, FN4_MODE, FN4_DELAY);
-
-	Serial.begin(115200);
 }
 
 void loop(){
-	if(stepper.update() != DRV8825::STOPPED) return;
-
+//	Serial.println(digitalRead(ENDSTOP_PIN));
+	if(stepper.getStatus() != DRV8825::STOPPED) return;
+	stepper.disable();
 	Function::action_t action = Function::ACTION_IDLE;
-	for(byte i = 0; i < 4; i++){
-//		Serial.print("function ");
-//		Serial.println(i);
-		action = fn[i]->update();
-		if(action != Function::ACTION_IDLE){
-			break;
+	int8_t active = Function::getActive();
+
+	if(active == 0){
+//	stepper.disable();
+		for(byte i = 0; i < 4; i++){
+	//		Serial.print("function ");
+	//		Serial.println(i);
+			action = fn[i]->update();
+			if(action != Function::ACTION_IDLE){
+				break;
+			}
 		}
+	} else {
+		action = fn[active - 1]->update();
+//		Serial.print("current channel: ");
+//		Serial.println(active);
+//		Serial.print("state: ");
+//		Serial.println(action);
 	}
 
 	if(action == Function::ACTION_START){
 //		Serial.println("action start");
+		stepper.enable();
 		stepper.moveDistance(TRAVEL, DRV8825::FORWARD);
 	} else if(action == Function::ACTION_STOP){
 //		Serial.println("action stop");
+		stepper.enable();
 		stepper.moveDistance(TRAVEL, DRV8825::BACKWARD);
 	}
+}
+
+void initISR(){
+	int freq = ((float)SPEED / TRAVEL_REV) * (STEPS * MICROSTEPS);
+
+	unsigned long clearValue = 16000000L / freq;
+	byte prescaler = 0x1;
+	if(clearValue > 65534){
+		prescaler = 0x2;
+		clearValue /= 8;
+	}
+
+	if(clearValue > 65534){
+		prescaler = 0x3;
+		clearValue /= 8;
+	}
+
+	cli();
+
+	TCCR1A = 0;
+	TCCR1B = 0;
+	TCCR1C = 0;
+
+	TCCR1B |= (0x1 << WGM12);
+	TCCR1B |= (prescaler);
+
+	TIMSK1 |= (1 << OCIE1A);
+
+	OCR1A = clearValue;
+
+	sei();
+}
+
+ISR(TIMER1_COMPA_vect){
+	stepper.update();
 }

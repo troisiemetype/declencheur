@@ -28,6 +28,10 @@ void DRV8825::init(byte stepPin, byte dirPin, byte enPin){
 	pinMode(_pinDir, OUTPUT);
 	pinMode(_pinEn, OUTPUT);
 
+	digitalWrite(_pinStep, LOW);
+	digitalWrite(_pinDir, LOW);
+	disable();
+
 	pinMode(ENDSTOP_PIN, INPUT_PULLUP);
 
 	pinMode(13, OUTPUT);
@@ -36,14 +40,16 @@ void DRV8825::init(byte stepPin, byte dirPin, byte enPin){
 void DRV8825::moveSteps(int step, bool dir){
 	_dir = dir;
 	_step = step;
+	_status = MOVING;
+
 
 	digitalWrite(_pinDir, (_dir ^ _reverse));
 
-	digitalWrite(13, _dir);
+//	digitalWrite(13, _dir);
 }
 
 void DRV8825::moveDistance(int distance, bool dir){
-	int steps = (distance / TRAVEL_REV) * STEPS;
+	int steps = (distance / TRAVEL_REV) * (STEPS * MICROSTEPS);
 	moveSteps(steps, dir);
 }
 
@@ -52,10 +58,13 @@ DRV8825::status_t DRV8825::update(){
 		_status = STOPPED;
 		return _status;
 	}
+//	Serial.println(_step);
 
 	digitalWrite(_pinStep, HIGH);
-	delayMicroseconds(5);
+	digitalWrite(13, HIGH);
+	delayMicroseconds(20);
 	digitalWrite(_pinStep, LOW);
+	digitalWrite(13, LOW);
 
 	_step--;
 
@@ -65,18 +74,15 @@ DRV8825::status_t DRV8825::update(){
 
 void DRV8825::home(){
 	while (digitalRead(ENDSTOP_PIN) == HIGH){
-		moveSteps(5, BACKWARD);
+		moveSteps(1, BACKWARD);
 	}
-	moveSteps(5, FORWARD);
-}
 
-void DRV8825::enable(){
-	enable(true);
+	moveSteps(5, FORWARD);
 }
 
 void DRV8825::enable(bool value){
 	_enable = value;
-
+	digitalWrite(_pinEn, !_enable);
 }
 
 void DRV8825::disable(){
